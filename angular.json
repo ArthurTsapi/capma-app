@@ -28,6 +28,9 @@
               "src/styles.css"
             ],
             "scripts": [],
+            "allowedCommonJsDependencies": [
+              "lottie-web"
+            ],
             "server": "src/main.server.ts",
             "prerender": true,
             "ssr": {
@@ -36,6 +39,12 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -96,5 +105,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "df22e67a-9191-4eff-bdd8-4526b2b3fa5e"
   }
 }

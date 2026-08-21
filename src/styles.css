@@ -1,1 +1,139 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --capma-blue: #1E68B3;
+  --capma-blue-dark: #15528F;
+  --capma-orange: #E87722;
+  --capma-sky: #EAF4FF;
+  --capma-mist: #F8FBFF;
+  --capma-navy: #163A5F;
+}
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  [id] {
+    scroll-margin-top: 5.5rem;
+  }
+
+  body {
+    @apply bg-capma-mist text-slate-800 font-sans antialiased;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(30, 104, 179, 0.08), transparent 28%),
+      radial-gradient(circle at 88% 0%, rgba(232, 119, 34, 0.07), transparent 24%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3 {
+    @apply font-display text-capma-blue;
+  }
+
+  h1 {
+    @apply text-3xl sm:text-4xl font-bold;
+  }
+
+  h2 {
+    @apply text-2xl sm:text-3xl font-bold;
+  }
+
+  h3 {
+    @apply text-xl font-semibold;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-5 py-3 sm:px-6 bg-capma-blue text-white font-semibold rounded-xl
+      hover:bg-[color:var(--capma-blue-dark)] transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-5 py-3 sm:px-6 bg-capma-orange text-white font-semibold rounded-xl
+      hover:bg-orange-600 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5;
+  }
+
+  .btn-success {
+    @apply inline-flex items-center justify-center px-5 py-3 sm:px-6 bg-capma-success-green text-white font-semibold rounded-xl
+      hover:bg-green-600 transition-all duration-300;
+  }
+
+  .card {
+    @apply bg-white/90 backdrop-blur-sm rounded-2xl shadow-sm border border-sky-100 hover:shadow-xl hover:border-capma-blue/20 transition-all duration-300;
+    padding: 1.25rem;
+  }
+
+  .tech-panel {
+    @apply relative overflow-hidden rounded-3xl border border-sky-200/80 bg-white/80 backdrop-blur-md shadow-lg;
+  }
+
+  .tech-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(30, 104, 179, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 104, 179, 0.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+    animation: grid-pan 18s linear infinite;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .tech-orb {
+    @apply absolute rounded-full blur-2xl pointer-events-none animate-pulse-glow;
+  }
+
+  .tech-scan {
+    @apply pointer-events-none absolute left-0 right-0 h-16 opacity-40;
+    background: linear-gradient(to bottom, transparent, rgba(30, 104, 179, 0.18), transparent);
+    animation: scan 4.5s linear infinite;
+  }
+
+  .tech-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-3 py-1.5 text-xs sm:text-sm text-capma-blue shadow-sm backdrop-blur;
+  }
+
+  .shimmer-border {
+    background: linear-gradient(90deg, #1E68B3, #38BDF8, #E87722, #1E68B3);
+    background-size: 200% 100%;
+    animation: shimmer 2.8s linear infinite;
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  .price-large {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    line-height: 1;
+  }
+
+  .badge-success {
+    @apply inline-block px-3 py-1 bg-green-100 text-capma-success-green font-medium rounded-full text-sm;
+  }
+
+  .badge-warning {
+    @apply inline-block px-3 py-1 bg-orange-100 text-capma-orange font-medium rounded-full text-sm;
+  }
+
+  .badge-info {
+    @apply inline-block px-3 py-1 bg-blue-100 text-capma-blue font-medium rounded-full text-sm;
+  }
+}
+
+@media (max-width: 640px) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-success {
+    width: 100%;
+  }
+}
