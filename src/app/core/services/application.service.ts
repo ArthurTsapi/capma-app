@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of } from 'rxjs';
+import { Observable, catchError, map, of } from 'rxjs';
 import { CandidateApplication, ApplicationStatus } from '../models/certification.model';
 import { environment } from '../../../environments/environment';
 
@@ -99,7 +99,10 @@ export class ApplicationService {
   getLatestApplicationByEmail(email: string): Observable<CandidateApplication | undefined> {
     return this.http.get<{ success: boolean; data: CandidateApplication | null }>(
       `${this.apiBase}/applications/latest-by-email/${encodeURIComponent(email.trim().toLowerCase())}`
-    ).pipe(map(response => response.data || undefined));
+    ).pipe(
+      map(response => response.data || undefined),
+      catchError(() => of(undefined))
+    );
   }
 
   /**

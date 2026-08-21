@@ -29,7 +29,7 @@ const STATUS_TO_STEP: Record<ApplicationStatus, number> = {
   imports: [CommonModule, StepperComponent, StatusBadgeComponent, RouterLink],
   template: `
     <div class="min-h-screen bg-capma-light-grey py-8 px-4">
-      <div class="max-w-4xl mx-auto" *ngIf="application$ | async as app; else loading">
+      <div class="max-w-4xl mx-auto" *ngIf="application$ | async as app; else noApplication">
         <ng-container *ngIf="level$ | async as level">
           <div class="mb-8">
             <h1 class="text-3xl font-bold text-capma-blue mb-2">{{ lang.t('dashHello') }} {{ app.firstName || app.userId }}</h1>
@@ -151,9 +151,13 @@ const STATUS_TO_STEP: Record<ApplicationStatus, number> = {
         </ng-container>
       </div>
 
-      <ng-template #loading>
-        <div class="max-w-2xl mx-auto py-20 text-center text-slate-500">
-          {{ lang.t('loading') }}
+      <ng-template #noApplication>
+        <div class="max-w-2xl mx-auto py-20 px-6 text-center">
+          <h1 class="text-2xl font-bold text-capma-navy">Aucune candidature trouvée</h1>
+          <p class="mt-3 text-slate-600">Votre compte candidat ne possède pas encore de dossier enregistré.</p>
+          <a routerLink="/apply" class="inline-block mt-6 px-6 py-3 rounded-lg bg-capma-blue text-white font-semibold">
+            Déposer mon dossier
+          </a>
         </div>
       </ng-template>
     </div>
