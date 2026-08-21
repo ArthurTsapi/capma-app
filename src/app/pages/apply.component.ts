@@ -174,8 +174,8 @@ interface DocField {
                   </button>
                 </div>
               </div>
-              <p *ngIf="!allDocumentsUploaded" class="text-xs text-capma-orange mt-4">
-                {{ lang.t('allDocsRequired') }}
+              <p class="text-xs text-gray-500 mt-4">
+                Les documents peuvent être ajoutés maintenant ou transmis ultérieurement.
               </p>
             </div>
 
@@ -275,7 +275,7 @@ export class ApplyComponent implements OnInit, OnDestroy {
   }
 
   get canSubmit(): boolean {
-    return this.applicationForm.valid && this.allDocumentsUploaded;
+    return this.applicationForm.valid;
   }
 
   ngOnInit(): void {
@@ -438,9 +438,15 @@ export class ApplyComponent implements OnInit, OnDestroy {
       totalAmountDue: this.selectedLevel?.totalFee || 0
     };
 
-    this.applicationService.createApplication(newApplication).subscribe(app => {
-      this.notifications.success(this.lang.t('applicationSubmitted'));
-      this.router.navigate(['/dashboard', app.id]);
+    this.applicationService.createApplication(newApplication).subscribe({
+      next: app => {
+        this.notifications.success(this.lang.t('applicationSubmitted'));
+        this.router.navigate(['/dashboard', app.id]);
+      },
+      error: err => {
+        const message = err?.error?.message || 'Impossible d\'enregistrer le dossier. Connectez-vous ou créez d\'abord un compte candidat.';
+        this.notifications.error(message);
+      }
     });
   }
 }

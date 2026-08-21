@@ -8,7 +8,7 @@ export const environment = {
   features: {
     enableAnalytics: true,
     enableLogging: true,
-    mockApi: true // Use mock services
+    mockApi: false // Use the local backend API
   },
   payment: {
     mtnApiUrl: 'https://api.mtn.cm',
