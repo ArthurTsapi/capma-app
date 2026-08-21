@@ -10,6 +10,7 @@ import { NotificationService } from '../core/services/notification.service';
 import { StepperComponent } from '../shared/components/stepper.component';
 import { StatusBadgeComponent } from '../shared/components/status-badge.component';
 import { LanguageService } from '../core/services/language.service';
+import { AuthService } from '../core/services/auth.service';
 
 const STATUS_TO_STEP: Record<ApplicationStatus, number> = {
   submitted: 1,
@@ -171,6 +172,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private applicationService: ApplicationService,
     private certificationDataService: CertificationDataService,
     private notifications: NotificationService,
+    private authService: AuthService,
     public lang: LanguageService
   ) {}
 
@@ -178,18 +180,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const resolveId$ = this.route.paramMap.pipe(
       switchMap(params => {
         const id = params.get('id');
-        if (id) return of(id);
-        return this.applicationService.getApplications().pipe(
-          switchMap(apps => {
-            const last = [...apps].sort((a, b) => +new Date(b.appliedAt) - +new Date(a.appliedAt))[0];
-            return of(last ? last.id : 'app-001');
-          })
+        const currentUser = this.authService.getCurrentUserSync();
+        if (id && (currentUser?.role === 'admin' || currentUser?.role === 'reviewer')) return of(id);
+        if (!currentUser?.email) return of('');
+        return this.applicationService.getLatestApplicationByEmail(currentUser.email).pipe(
+          switchMap(app => of(app?.id || ''))
         );
       })
     );
 
     this.application$ = resolveId$.pipe(
-      switchMap(id => this.applicationService.getApplicationById(id))
+      switchMap(id => id ? this.applicationService.getApplicationById(id) : of(undefined))
     );
 
     this.level$ = this.application$.pipe(
