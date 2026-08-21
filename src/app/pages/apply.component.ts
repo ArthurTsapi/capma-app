@@ -434,7 +434,8 @@ export class ApplyComponent implements OnInit, OnDestroy {
       email: formData.email,
       phone: formData.phone,
       city: formData.city,
-      preferredCenterId: formData.preferredCenterId
+      preferredCenterId: formData.preferredCenterId,
+      totalAmountDue: this.selectedLevel?.totalFee || 0
     };
 
     this.applicationService.createApplication(newApplication).subscribe(app => {

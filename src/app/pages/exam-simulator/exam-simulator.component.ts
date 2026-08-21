@@ -371,30 +371,31 @@ export class ExamSimulatorComponent implements OnInit, OnDestroy {
       this.examAccessGranted = true;
       return;
     }
-    const app = this.applicationService.getLatestApplicationByEmailSync(currentUser.email);
-    this.candidateApp = app;
-    if (!app) {
-      this.examAccessGranted = false;
-      this.lockReason = 'Aucune candidature trouvée à votre nom. Veuillez d\'abord déposer un dossier de candidature ou contacter l\'administrateur CaPMA.';
-      return;
-    }
-    if (!this.isApprovedOrBetter(app.status)) {
-      this.examAccessGranted = false;
-      this.lockReason = 'Votre candidature est en cours de validation administrative. L\'accès à l\'examen sera débloqué une fois vos pièces justificatives approuvées.';
-      return;
-    }
-    if (app.paymentStatus !== 'completed') {
-      this.examAccessGranted = false;
-      this.lockReason = 'Votre paiement n\'a pas encore été enregistré. Merci de régler les frais de certification pour débloquer l\'examen.';
-      return;
-    }
-    if (!this.isAccessStatus(app.status)) {
-      this.examAccessGranted = false;
-      this.lockReason = 'Votre convocation à l\'examen est en cours de préparation. Vous recevrez un email dès que l\'accès au QCM sera disponible.';
-      return;
-    }
-    this.examAccessGranted = true;
-    this.notifications.success('Accès autorisé. Bonne chance pour votre examen !');
+    this.subs.add(this.applicationService.getLatestApplicationByEmail(currentUser.email).subscribe(app => {
+      this.candidateApp = app;
+      if (!app) {
+        this.examAccessGranted = false;
+        this.lockReason = 'Aucune candidature trouvée à votre nom. Veuillez d\'abord déposer un dossier de candidature ou contacter l\'administrateur CaPMA.';
+        return;
+      }
+      if (!this.isApprovedOrBetter(app.status)) {
+        this.examAccessGranted = false;
+        this.lockReason = 'Votre candidature est en cours de validation administrative. L\'accès à l\'examen sera débloqué une fois vos pièces justificatives approuvées.';
+        return;
+      }
+      if (app.paymentStatus !== 'completed') {
+        this.examAccessGranted = false;
+        this.lockReason = 'Votre paiement n\'a pas encore été enregistré. Merci de régler les frais de certification pour débloquer l\'examen.';
+        return;
+      }
+      if (!this.isAccessStatus(app.status)) {
+        this.examAccessGranted = false;
+        this.lockReason = 'Votre convocation à l\'examen est en cours de préparation. Vous recevrez un email dès que l\'accès au QCM sera disponible.';
+        return;
+      }
+      this.examAccessGranted = true;
+      this.notifications.success('Accès autorisé. Bonne chance pour votre examen !');
+    }));
   }
 
   statusLabel(status: string): string {

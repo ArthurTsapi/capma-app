@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map, of } from 'rxjs';
 import { CandidateApplication, ApplicationStatus } from '../models/certification.model';
+import { environment } from '../../../environments/environment';
 
 /**
  * Service to manage candidate applications
@@ -9,7 +11,7 @@ import { CandidateApplication, ApplicationStatus } from '../models/certification
   providedIn: 'root'
 })
 export class ApplicationService {
-  private applicationsSubject = new BehaviorSubject<CandidateApplication[]>([]);
+  private readonly apiBase = environment.apiUrl;
   
   // Mock data for demonstration
   private mockApplications: CandidateApplication[] = [
@@ -55,164 +57,94 @@ export class ApplicationService {
     }
   ];
 
-  constructor() {
-    this.applicationsSubject.next(this.mockApplications);
+  constructor(private http: HttpClient) {
   }
 
   /**
    * Get all applications
    */
   getApplications(): Observable<CandidateApplication[]> {
-    return this.applicationsSubject.asObservable();
+    return this.http.get<{ success: boolean; data: CandidateApplication[] }>(`${this.apiBase}/applications`)
+      .pipe(map(response => response.data || []));
   }
 
   /**
    * Get application by id
    */
   getApplicationById(id: string): Observable<CandidateApplication | undefined> {
-    return new Observable(observer => {
-      const app = this.mockApplications.find(a => a.id === id);
-      observer.next(app);
-      observer.complete();
-    });
+    return this.http.get<{ success: boolean; data: CandidateApplication }>(`${this.apiBase}/applications/${encodeURIComponent(id)}`)
+      .pipe(map(response => response.data));
   }
 
   /**
    * Get applications for a specific user
    */
   getUserApplications(userId: string): Observable<CandidateApplication[]> {
-    return new Observable(observer => {
-      const apps = this.mockApplications.filter(a => a.userId === userId);
-      observer.next(apps);
-      observer.complete();
-    });
+    return this.http.get<{ success: boolean; data: CandidateApplication[] }>(`${this.apiBase}/applications`, { params: { userId } })
+      .pipe(map(response => response.data || []));
   }
 
   /**
    * Get applications by candidate email
    */
   getApplicationsByEmail(email: string): Observable<CandidateApplication[]> {
-    return new Observable(observer => {
-      const normalized = (email || '').toLowerCase().trim();
-      const apps = this.mockApplications.filter(a => (a.email || '').toLowerCase().trim() === normalized);
-      observer.next(apps);
-      observer.complete();
-    });
+    return this.http.get<{ success: boolean; data: CandidateApplication[] }>(
+      `${this.apiBase}/applications/by-email/${encodeURIComponent(email.trim().toLowerCase())}`
+    ).pipe(map(response => response.data || []));
   }
 
   /**
    * Get most recent application for a candidate email
    */
   getLatestApplicationByEmail(email: string): Observable<CandidateApplication | undefined> {
-    return new Observable(observer => {
-      const normalized = (email || '').toLowerCase().trim();
-      const apps = this.mockApplications
-        .filter(a => (a.email || '').toLowerCase().trim() === normalized)
-        .sort((a, b) => (b.appliedAt?.getTime() || 0) - (a.appliedAt?.getTime() || 0));
-      observer.next(apps[0]);
-      observer.complete();
-    });
+    return this.http.get<{ success: boolean; data: CandidateApplication | null }>(
+      `${this.apiBase}/applications/latest-by-email/${encodeURIComponent(email.trim().toLowerCase())}`
+    ).pipe(map(response => response.data || undefined));
   }
 
   /**
    * Get all applications synchronously (for UI checks)
    */
   getAllApplicationsSync(): CandidateApplication[] {
-    return [...this.mockApplications];
+    return [];
   }
 
   /**
    * Get application by email synchronously (for UI checks)
    */
   getLatestApplicationByEmailSync(email: string): CandidateApplication | undefined {
-    const normalized = (email || '').toLowerCase().trim();
-    const apps = this.mockApplications
-      .filter(a => (a.email || '').toLowerCase().trim() === normalized)
-      .sort((a, b) => (b.appliedAt?.getTime() || 0) - (a.appliedAt?.getTime() || 0));
-    return apps[0];
+    return undefined;
   }
 
   /**
    * Create a new application
    */
   createApplication(application: Omit<CandidateApplication, 'id'>): Observable<CandidateApplication> {
-    return new Observable(observer => {
-      const newApp: CandidateApplication = {
-        ...application,
-        id: 'app-' + Date.now()
-      };
-      this.mockApplications.push(newApp);
-      this.applicationsSubject.next([...this.mockApplications]);
-      observer.next(newApp);
-      observer.complete();
-    });
+    return this.http.post<{ success: boolean; data: CandidateApplication }>(`${this.apiBase}/applications`, application)
+      .pipe(map(response => response.data));
   }
 
   /**
    * Update application status
    */
   updateApplicationStatus(id: string, status: ApplicationStatus): Observable<CandidateApplication | null> {
-    return new Observable(observer => {
-      const app = this.mockApplications.find(a => a.id === id);
-      if (app) {
-        app.status = status;
-        if (status === 'approved') {
-          app.validatedAt = new Date();
-        }
-        this.applicationsSubject.next([...this.mockApplications]);
-        observer.next(app);
-      } else {
-        observer.next(null);
-      }
-      observer.complete();
-    });
+    return this.http.patch<{ success: boolean; data: CandidateApplication }>(`${this.apiBase}/applications/${id}/status`, { status })
+      .pipe(map(response => response.data || null));
   }
 
   /**
    * Update payment status
    */
   updatePaymentStatus(id: string, paymentStatus: 'pending' | 'processing' | 'completed' | 'failed'): Observable<CandidateApplication | null> {
-    return new Observable(observer => {
-      const app = this.mockApplications.find(a => a.id === id);
-      if (app) {
-        app.paymentStatus = paymentStatus;
-        if (paymentStatus === 'completed') {
-          app.status = 'paid';
-          app.convocationUrl = `https://capma.cm/convocation/${app.id}.pdf`;
-        }
-        this.applicationsSubject.next([...this.mockApplications]);
-        observer.next(app);
-      } else {
-        observer.next(null);
-      }
-      observer.complete();
-    });
+    return this.http.patch<{ success: boolean; data: CandidateApplication }>(`${this.apiBase}/applications/${id}/payment-status`, { paymentStatus })
+      .pipe(map(response => response.data || null));
   }
 
   /**
    * Upload document
    */
   uploadDocument(applicationId: string, documentType: 'cv' | 'diploma' | 'idCard' | 'experienceCert', file: File): Observable<{ success: boolean; message: string }> {
-    return new Observable(observer => {
-      // Simulate file upload
-      const app = this.mockApplications.find(a => a.id === applicationId);
-      if (app) {
-        if (documentType === 'cv') {
-          app.documents.cvUrl = `https://capma.cm/docs/${applicationId}/cv.pdf`;
-        } else if (documentType === 'diploma') {
-          app.documents.diplomaUrl = `https://capma.cm/docs/${applicationId}/diploma.pdf`;
-        } else if (documentType === 'idCard') {
-          app.documents.idCardUrl = `https://capma.cm/docs/${applicationId}/id.pdf`;
-        } else if (documentType === 'experienceCert') {
-          app.documents.experienceCertUrl = `https://capma.cm/docs/${applicationId}/experience.pdf`;
-        }
-        this.applicationsSubject.next([...this.mockApplications]);
-        observer.next({ success: true, message: 'Document uploaded successfully' });
-      } else {
-        observer.next({ success: false, message: 'Application not found' });
-      }
-      observer.complete();
-    });
+    return of({ success: false, message: 'Le stockage permanent des documents doit encore être configuré.' });
   }
 
   /**

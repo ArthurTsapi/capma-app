@@ -10,6 +10,7 @@ import { FaqComponent } from './pages/faq.component';
 import { TeamComponent } from './pages/team.component';
 import { RecertificationComponent } from './pages/recertification.component';
 import { LoginComponent } from './pages/login.component';
+import { RegisterComponent } from './pages/register.component';
 import { NotFoundComponent } from './pages/not-found.component';
 import { authGuardFn } from './core/guards/auth.guard';
 
@@ -73,6 +74,10 @@ export const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent
+  },
+  {
+    path: 'register',
+    component: RegisterComponent
   },
   {
     path: 'certifications',

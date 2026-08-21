@@ -233,9 +233,9 @@ type LoginRole = 'candidate' | 'admin';
             <div class="mt-8 pt-6 border-t border-slate-100 text-center">
               @if (selectedRole === 'candidate') {
                 <p class="text-sm text-gray-500">
-                  {{ lang.t('loginNoAccount') }}
-                  <a routerLink="/apply" class="font-semibold text-capma-blue hover:text-capma-orange">
-                    {{ lang.t('loginCreateApp') }}
+                  Pas encore de compte ?
+                  <a routerLink="/register" class="font-semibold text-capma-blue hover:text-capma-orange">
+                    Créer un compte candidat
                   </a>
                 </p>
               } @else {
