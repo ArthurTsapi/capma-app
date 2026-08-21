@@ -94,27 +94,19 @@ const STATUS_TO_STEP: Record<ApplicationStatus, number> = {
               <ul class="text-sm text-slate-600 space-y-2">
                 <li class="flex justify-between border-b border-slate-100 pb-2">
                   <span>{{ lang.t('docCv') }}</span>
-                  <span [ngClass]="app.documents.cvUrl ? 'text-capma-success-green' : 'text-capma-orange'">
-                    {{ app.documents.cvUrl ? lang.t('badgeSubmitted') : lang.t('dashPending') }}
-                  </span>
+                  <span class="flex items-center gap-2"><span [ngClass]="app.documents.cvUrl ? 'text-capma-success-green' : 'text-capma-orange'">{{ app.documents.cvUrl ? lang.t('badgeSubmitted') : lang.t('dashPending') }}</span><label class="cursor-pointer text-capma-blue text-xs font-semibold hover:underline">Ajouter<input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" (change)="uploadDocument(app, 'cv', $event)"></label></span>
                 </li>
                 <li class="flex justify-between border-b border-slate-100 pb-2">
                   <span>{{ lang.t('docDiploma') }}</span>
-                  <span [ngClass]="app.documents.diplomaUrl ? 'text-capma-success-green' : 'text-capma-orange'">
-                    {{ app.documents.diplomaUrl ? lang.t('badgeSubmitted') : lang.t('dashPending') }}
-                  </span>
+                  <span class="flex items-center gap-2"><span [ngClass]="app.documents.diplomaUrl ? 'text-capma-success-green' : 'text-capma-orange'">{{ app.documents.diplomaUrl ? lang.t('badgeSubmitted') : lang.t('dashPending') }}</span><label class="cursor-pointer text-capma-blue text-xs font-semibold hover:underline">Ajouter<input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" (change)="uploadDocument(app, 'diploma', $event)"></label></span>
                 </li>
                 <li class="flex justify-between border-b border-slate-100 pb-2">
                   <span>{{ lang.t('docId') }}</span>
-                  <span [ngClass]="app.documents.idCardUrl ? 'text-capma-success-green' : 'text-capma-orange'">
-                    {{ app.documents.idCardUrl ? lang.t('badgeSubmitted') : lang.t('dashPending') }}
-                  </span>
+                  <span class="flex items-center gap-2"><span [ngClass]="app.documents.idCardUrl ? 'text-capma-success-green' : 'text-capma-orange'">{{ app.documents.idCardUrl ? lang.t('badgeSubmitted') : lang.t('dashPending') }}</span><label class="cursor-pointer text-capma-blue text-xs font-semibold hover:underline">Ajouter<input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" (change)="uploadDocument(app, 'idCard', $event)"></label></span>
                 </li>
                 <li class="flex justify-between">
                   <span>{{ lang.t('docExp') }}</span>
-                  <span [ngClass]="app.documents.experienceCertUrl ? 'text-capma-success-green' : 'text-capma-orange'">
-                    {{ app.documents.experienceCertUrl ? lang.t('badgeSubmitted') : lang.t('dashPending') }}
-                  </span>
+                  <span class="flex items-center gap-2"><span [ngClass]="app.documents.experienceCertUrl ? 'text-capma-success-green' : 'text-capma-orange'">{{ app.documents.experienceCertUrl ? lang.t('badgeSubmitted') : lang.t('dashPending') }}</span><label class="cursor-pointer text-capma-blue text-xs font-semibold hover:underline">Ajouter<input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" (change)="uploadDocument(app, 'experienceCert', $event)"></label></span>
                 </li>
               </ul>
             </div>
@@ -284,15 +276,31 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onPay(app: CandidateApplication): void {
     this.subs.add(
-      this.applicationService.updatePaymentStatus(app.id, 'completed').subscribe({
-        next: updated => {
-          this.notifications.success(this.lang.t('dashPaymentSuccess'));
-          if (updated) this.application$ = of(updated);
+      this.applicationService.requestPayment(app.id).subscribe({
+        next: result => {
+          this.notifications.success(`Demande de paiement enregistrée : ${result.transactionId}`);
+          this.application$ = of(result.application);
           this.router.navigate(['/dashboard', app.id]);
         },
-        error: () => this.notifications.error(this.lang.t('loginFailed'))
+        error: err => this.notifications.error(err?.error?.message || 'Échec de la demande de paiement')
       })
     );
+  }
+
+  uploadDocument(app: CandidateApplication, type: 'cv' | 'diploma' | 'idCard' | 'experienceCert', event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      this.notifications.error('Le fichier ne doit pas dépasser 5 Mo');
+      return;
+    }
+    this.subs.add(this.applicationService.uploadDocument(app.id, type, file).subscribe({
+      next: response => {
+        this.notifications.success(response.message);
+        this.application$ = this.applicationService.getApplicationById(app.id);
+      },
+      error: err => this.notifications.error(err?.error?.message || 'Échec de l’enregistrement du document')
+    }));
   }
 
   onDownloadConvocation(app: CandidateApplication): void {

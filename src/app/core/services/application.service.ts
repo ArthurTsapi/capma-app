@@ -143,11 +143,21 @@ export class ApplicationService {
       .pipe(map(response => response.data || null));
   }
 
+  requestPayment(id: string, method = 'cash'): Observable<{ application: CandidateApplication; transactionId: string }> {
+    return this.http.post<{ success: boolean; data: CandidateApplication; transactionId: string }>(
+      `${this.apiBase}/applications/${id}/payment-request`, { method }
+    ).pipe(map(response => ({ application: response.data, transactionId: response.transactionId })));
+  }
+
   /**
    * Upload document
    */
   uploadDocument(applicationId: string, documentType: 'cv' | 'diploma' | 'idCard' | 'experienceCert', file: File): Observable<{ success: boolean; message: string }> {
-    return of({ success: false, message: 'Le stockage permanent des documents doit encore être configuré.' });
+    const body = new FormData();
+    body.append('file', file, file.name);
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiBase}/applications/${applicationId}/documents/${documentType}`, body
+    );
   }
 
   /**
