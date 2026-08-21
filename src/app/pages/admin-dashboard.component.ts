@@ -308,10 +308,10 @@ interface StatCard {
                         </td>
                         <td class="px-5 py-3 text-right">
                           <div class="inline-flex items-center gap-1.5">
-                            @if (app.status === 'under_review') {
+                            @if (app.status === 'under_review' || app.status === 'approved') {
                               <button type="button" (click)="approveApplication(app.id)"
                                 class="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 border border-emerald-100">
-                                ✓ Approuver
+                                ✓ Approuver tout
                               </button>
                             }
                             @if (app.status === 'paid') {
@@ -855,9 +855,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   approveApplication(id: string): void {
-    this.applicationService.updateApplicationStatus(id, 'approved').subscribe(app => {
+    this.applicationService.approveAll(id).subscribe(app => {
       if (app) {
-        this.notifications.success(`Candidature de ${app.firstName} ${app.lastName} approuvée.`);
+        this.notifications.success(`Dossier de ${app.firstName} ${app.lastName} approuvé, payé et convoqué.`);
       }
     });
   }

@@ -135,6 +135,11 @@ export class ApplicationService {
       .pipe(map(response => response.data || null));
   }
 
+  approveAll(id: string): Observable<CandidateApplication> {
+    return this.http.post<{ success: boolean; data: CandidateApplication }>(`${this.apiBase}/applications/${id}/approve-all`, {})
+      .pipe(map(response => response.data));
+  }
+
   /**
    * Update payment status
    */
